@@ -1,0 +1,120 @@
+-- === CONFIGURATION ===
+local KEY = "MoonScript23761"
+local SCRIPT_URL = "https://raw.githubusercontent.com/syosuq7/githexp/main/25ms_obf.lua%20(2).txt"
+local DISCORD_URL = "https://discord.gg/RSDBDZhf3A"
+
+local FOLDER = "MoonScript"
+local KEY_FILE = FOLDER .. "/key.txt"
+
+if _G.MoonScript_KeyPassed then
+    return loadstring(game:HttpGet(SCRIPT_URL))()
+end
+
+-- === FILE HELPERS ===
+local function readKey()
+    if not readfile then return nil end
+    local ok, data = pcall(readfile, KEY_FILE)
+    if ok and data and data ~= "" then return data end
+    return nil
+end
+
+local function saveKey(key)
+    if makefolder and isfolder and not isfolder(FOLDER) then
+        pcall(makefolder, FOLDER)
+    end
+    if writefile then
+        pcall(writefile, KEY_FILE, key)
+    end
+end
+
+-- === WINDUI ===
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- === CHECK SAVED KEY ===
+local savedKey = readKey()
+if savedKey == KEY then
+    _G.MoonScript_KeyPassed = true
+    return loadstring(game:HttpGet(SCRIPT_URL))()
+end
+
+-- === KEY WINDOW ===
+local Window = WindUI:CreateWindow({
+    Title = "MoonScript",
+    Icon = "moon",
+    Author = "MoonScript",
+    Folder = "MoonScript",
+    Size = UDim2.fromOffset(460, 320),
+    Transparent = true,
+    Theme = "Dark",
+    User = { Enabled = true, Anonymous = false },
+})
+
+local KeyTab = Window:Tab({ Title = "Key", Icon = "key" })
+
+KeyTab:Paragraph({
+    Title = "Enter key to give access to script",
+    Desc = "Get your key from our Discord server",
+})
+
+local enteredKey = ""
+KeyTab:Input({
+    Title = "Key",
+    Value = "",
+    Placeholder = "Enter your key...",
+    Callback = function(text)
+        enteredKey = text
+    end,
+})
+
+KeyTab:Button({
+    Title = "Submit",
+    Callback = function()
+        if enteredKey == KEY then
+            saveKey(enteredKey)
+            _G.MoonScript_KeyPassed = true
+            WindUI:Notify({
+                Title = "Success",
+                Content = "Key verified! Launching...",
+                Duration = 3,
+                Icon = "check",
+            })
+            task.wait(0.5)
+            Window:Destroy()
+            pcall(function() loadstring(game:HttpGet(SCRIPT_URL))() end)
+        else
+            WindUI:Notify({
+                Title = "Error",
+                Content = "Invalid key!",
+                Duration = 3,
+                Icon = "x",
+            })
+        end
+    end,
+})
+
+KeyTab:Divider()
+
+KeyTab:Button({
+    Title = "Join Discord",
+    Icon = "message-circle",
+    Callback = function()
+        local copied = false
+        if setclipboard then
+            copied = pcall(setclipboard, DISCORD_URL)
+        end
+        WindUI:Notify({
+            Title = copied and "Discord link copied!" or "Discord",
+            Content = copied and "Paste it in your browser: " .. DISCORD_URL or DISCORD_URL,
+            Duration = 6,
+            Icon = "check",
+        })
+    end,
+})
+
+KeyTab:Paragraph({
+    Title = "Join to channel to take key",
+    Desc = "discord.gg/RSDBDZhf3A",
+})
